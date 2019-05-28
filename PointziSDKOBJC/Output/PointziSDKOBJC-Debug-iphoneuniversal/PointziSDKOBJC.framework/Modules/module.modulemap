@@ -1,0 +1,6 @@
+framework module PointziSDKOBJC {
+  umbrella header "PointziSDKOBJC.h"
+
+  export *
+  module * { export * }
+}
