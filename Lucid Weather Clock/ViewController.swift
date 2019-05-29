@@ -12,6 +12,7 @@ import ForecastIO
 import BEMAnalogClock
 import INTULocationManager
 import Charts
+import PointziSDKOBJC
 
 class ViewController: UIViewController, BEMAnalogClockDelegate {
 
@@ -81,6 +82,8 @@ class ViewController: UIViewController, BEMAnalogClockDelegate {
             self.clock.alpha = 1.0
         }) 
         clockDisplayedToken = true
+        
+        showToolTip()
     }
 
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
@@ -494,5 +497,43 @@ class ViewController: UIViewController, BEMAnalogClockDelegate {
             let activityVC = UIActivityViewController(activityItems: ["Current precipation\(location) brought by @LucidWeatherClock", image], applicationActivities: nil)
             present(activityVC, animated: true, completion: nil)
         }
+    }
+    
+    func showToolTip() {
+        
+        let preferences = RCEasyTipPreferences(defaultPreferences:())
+        preferences?.drawing.backgroundColor = UIColor.white
+        preferences?.drawing.arrowPostion = .Top;
+        preferences?.animating.showDuration = 1.5;
+        preferences?.animating.dismissDuration = 1.5;
+        preferences?.animating.dismissTransform = CGAffineTransform(translationX: 0, y: -15);
+        preferences?.animating.showInitialTransform = CGAffineTransform(translationX: 0, y: -15);
+        preferences?.shouldDismissOnTouchOutside = true;
+        
+        let tipView = RCEasyTipView(preferences: preferences)
+        tipView?.show(animated: true, for: buttonRefresh, withinSuperView: nil)
+        
+        let urlRequest = URLRequest(url: URL(string: "https://dummyapi.io/api/post?limit=1")!)
+        let apiService = PZAPIService()
+        
+        apiService.getToolTipData(urlRequest) { (data) in
+            if let data = data {
+                DispatchQueue.main.async {
+                    tipView?.textLabel.text = data.message
+                    tipView?.textLabel.sizeToFit()
+                }
+                
+                apiService.downloadImage(data.image, completion: { (image) in
+                    if let image = image {
+                        DispatchQueue.main.async {
+                            tipView?.imageView.image = image
+                            
+                        }
+                    }
+                })
+            }
+        }
+        
+        
     }
 }
